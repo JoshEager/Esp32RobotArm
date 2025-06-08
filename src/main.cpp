@@ -1,16 +1,23 @@
 #include <Arduino.h>
 #include <Wifi.h>
 #include <ESP32Servo.h>
+#include <Stepper.h>
 
 const char *ssid = "TP-Link_7A50";
 const char *password = "89741238";
+const int stepsPerRev = 2048;
+
+const int blueServoPin = 4;
+const int blackServoPin = 15;
+const int in1 = 13;
+const int in2 = 12;
+const int in3 = 14;
+const int in4 = 27;
 
 WiFiServer server(80);
 Servo blueServo;
 Servo blackServo;
-
-const int blueServoPin = 4;
-const int blackServoPin = 15;
+Stepper myStepper(stepsPerRev, in1, in3, in2, in4);
 
 int blueServoPos = 0;
 int blackServoPos = 0;
@@ -48,11 +55,13 @@ void setup() {
 	blueServo.setPeriodHertz(50);    // standard 50 hz servo
   blackServo.setPeriodHertz(50);
   blackServo.attach(blackServoPin, 500, 2600);
-	blueServo.attach(blueServoPin, 500, 2100); // attaches the servo on pin 18 to the servo object
+	blueServo.attach(blueServoPin, 500, 2500); // attaches the servo on pin 18 to the servo object
 	// using default min/max of 1000us and 2000us
 	// different servos may require different min/max settings
 	// for an accurate 0 to 180 sweep
 
+  // Stepper init
+  myStepper.setSpeed(15);
 }
 
 void loop() {
@@ -94,7 +103,8 @@ void loop() {
     delay(15);
   }
 
-  delay(100);
+  myStepper.step(stepsPerRev / 4);
 
+  delay(100);
 }
 
