@@ -46,19 +46,16 @@ void setup() {
   // Server init
   server.begin();
 
-  // Servo init. Idk this was just copied and paseted from the library example and modified
+  // Servo init
   // Allow allocation of all timers
 	ESP32PWM::allocateTimer(0);
 	ESP32PWM::allocateTimer(1);
 	ESP32PWM::allocateTimer(2);
 	ESP32PWM::allocateTimer(3);
-	blueServo.setPeriodHertz(50);    // standard 50 hz servo
+	blueServo.setPeriodHertz(50); 
   blackServo.setPeriodHertz(50);
   blackServo.attach(blackServoPin, 500, 2600);
-	blueServo.attach(blueServoPin, 500, 2500); // attaches the servo on pin 18 to the servo object
-	// using default min/max of 1000us and 2000us
-	// different servos may require different min/max settings
-	// for an accurate 0 to 180 sweep
+	blueServo.attach(blueServoPin, 500, 2500);
 
   // Stepper init
   myStepper.setSpeed(15);
@@ -103,6 +100,7 @@ void loop() {
     delay(15);
   }
 
+  // Stepper stepping
   myStepper.step(stepsPerRev / 4);
 
   delay(100);
