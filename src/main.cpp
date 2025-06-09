@@ -4,7 +4,7 @@
 #include <Stepper.h>
 
 #define DEBUG
-#undef DEBUG
+// #undef DEBUG
 
 const char *ssid = "TP-Link_7A50";
 const char *password = "89741238";
@@ -19,6 +19,7 @@ const int in4 = 27;
 
 int blueServoPos = 0;
 int blackServoPos = 0;
+int blueServoDegreesAndSpeed[2];
 
 WiFiServer server(80);
 Servo blueServo;
@@ -35,13 +36,13 @@ void stepperTask(void *parameters)
    int steps = stepsAndSpeed[0];
    int speed = stepsAndSpeed[1];
 
-   #ifdef DEBUG
-      Serial.println("Running Stepper Thread...");
-      Serial.print("Steps: ");
-      Serial.println(steps);
-      Serial.print("Speed: ");
-      Serial.println(speed);
-   #endif
+#ifdef DEBUG
+   Serial.println("Running Stepper Thread...");
+   Serial.print("Steps: ");
+   Serial.println(steps);
+   Serial.print("Speed: ");
+   Serial.println(speed);
+#endif
 
    myStepper.setSpeed(speed);
    myStepper.step(steps);
@@ -50,19 +51,19 @@ void stepperTask(void *parameters)
    vTaskDelete(NULL);
 }
 
-void blueServoTask(void *parameters) 
+void blueServoTask(void *parameters)
 {
    int *degreesAndSpeed = (int *)parameters;
    int degrees = degreesAndSpeed[0];
    int speed = degreesAndSpeed[1];
 
-   #ifdef DEBUG
-      Serial.println("Running Blue Servo Task...");
-      Serial.print("Degrees: ");
-      Serial.println(degrees);
-      Serial.print("Speed: ");
-      Serial.println(speed);
-   #endif
+#ifdef DEBUG
+   Serial.println("Running Blue Servo Task...");
+   Serial.print("Degrees: ");
+   Serial.println(degrees);
+   Serial.print("Speed: ");
+   Serial.println(speed);
+#endif
 
    if (degrees > blueServoPos)
    {
@@ -73,7 +74,7 @@ void blueServoTask(void *parameters)
       }
       blueServoPos = degrees;
    }
-   else 
+   else
    {
       for (int i = blueServoPos; i > degrees; i--)
       {
@@ -84,6 +85,7 @@ void blueServoTask(void *parameters)
    }
 
    // kys
+   blueServoTaskHandle = NULL;
    vTaskDelete(NULL);
 }
 
@@ -93,13 +95,13 @@ void blackServoTask(void *parameters)
    int degrees = degreesAndSpeed[0];
    int speed = degreesAndSpeed[1];
 
-   #ifdef DEBUG
-      Serial.println("Running Black Servo Task...");
-      Serial.print("Degrees: ");
-      Serial.println(degrees);
-      Serial.print("Speed: ");
-      Serial.println(speed);
-   #endif
+#ifdef DEBUG
+   Serial.println("Running Black Servo Task...");
+   Serial.print("Degrees: ");
+   Serial.println(degrees);
+   Serial.print("Speed: ");
+   Serial.println(speed);
+#endif
 
    if (degrees > blackServoPos)
    {
@@ -110,7 +112,7 @@ void blackServoTask(void *parameters)
       }
       blackServoPos = degrees;
    }
-   else 
+   else
    {
       for (int i = blackServoPos; i > degrees; i--)
       {
@@ -128,7 +130,7 @@ void parseCommand(String command)
 {
    // Figure out what the first word of the command is
    String baseCommand;
-   for (int i = 0; command[i] != ' '; i++) 
+   for (int i = 0; command[i] != ' '; i++)
    {
       baseCommand += command[i];
    }
@@ -136,7 +138,7 @@ void parseCommand(String command)
    if (baseCommand == "baseAxis")
    {
       // Figure out the number of steps specified
-      String stepsCommand; 
+      String stepsCommand;
       for (int i = baseCommand.length() + 1; command[i] != ' '; i++)
       {
          stepsCommand += command[i];
@@ -151,24 +153,58 @@ void parseCommand(String command)
       }
       int speed = speedCommand.toInt();
 
-      // bundle arguments 
+      // bundle arguments
       static int stepsAndSpeed[] = {steps, speed};
 
       // Start the task to move hte motor
       xTaskCreate(
-         stepperTask, 
-         "Stepper Task",
-         4096,
-         &stepsAndSpeed,
-         1,
-         &stepperTaskHandle
-      );
+          stepperTask,
+          "Stepper Task",
+          4096,
+          &stepsAndSpeed,
+          1,
+          &stepperTaskHandle);
    }
-   else if (baseCommand == "elbowAxis") 
+   else if (baseCommand == "elbowAxis")
    {
       // Figure out the number of degrees specified
       String degreesCommand;
-      for (int i = baseCommand.length() + 1; command[i] != ' '; i++) 
+      for (int i = baseCommand.length() + 1; command[i] != ' '; i++)
+      {
+         degreesCommand += command[i];
+      }
+      int degrees = degreesCommand.toInt();
+
+      // Figure out the speed specified
+      String speedCommand;
+      for (int i = baseCommand.length() + 1 + degreesCommand.length() + 1; command[i] != '\0'; i++)
+      {
+         speedCommand += command[i];
+      }
+      int speed = speedCommand.toInt();
+
+      // bundle arguments
+      blueServoDegreesAndSpeed[0] = degrees;
+      blueServoDegreesAndSpeed[1] = speed;
+
+      // Start the task to move the stepper, but only if the task handle is free
+      if (blueServoTaskHandle == NULL)
+      {
+         xTaskCreate(
+          blueServoTask,
+          "Blue Stepper Task",
+          4096,
+          &blueServoDegreesAndSpeed,
+          1,
+          &blueServoTaskHandle);
+      }
+      
+   }
+   else if (baseCommand == "pinchAxis")
+   {
+      // Figure out the number of degrees specified
+      String degreesCommand;
+      for (int i = baseCommand.length() + 1; command[i] != ' '; i++)
       {
          degreesCommand += command[i];
       }
@@ -187,46 +223,14 @@ void parseCommand(String command)
 
       // Start the task to move the stepper
       xTaskCreate(
-         blueServoTask, 
-         "Blue Stepper Task",
-         4096,
-         &degreesAndSpeed,
-         1,
-         &blueServoTaskHandle
-      );
+          blackServoTask,
+          "Black Stepper Task",
+          4096,
+          &degreesAndSpeed,
+          1,
+          &blackServoTaskHandle);
    }
-   else if (baseCommand == "pinchAxis") 
-   {
-      // Figure out the number of degrees specified
-      String degreesCommand;
-      for (int i = baseCommand.length() + 1; command[i] != ' '; i++) 
-      {
-         degreesCommand += command[i];
-      }
-      int degrees = degreesCommand.toInt();
-
-      // Figure out the speed specified
-      String speedCommand;
-      for (int i = baseCommand.length() + 1 + degreesCommand.length() + 1; command[i] != '\0'; i++)
-      {
-         speedCommand += command[i];
-      }
-      int speed = speedCommand.toInt();
-
-      // bundle arguments
-      static int degreesAndSpeed[] = {degrees, speed};
-
-      // Start the task to move the stepper
-      xTaskCreate(
-         blackServoTask, 
-         "Black Stepper Task",
-         4096,
-         &degreesAndSpeed,
-         1,
-         &blackServoTaskHandle
-      );
-   }
-   else 
+   else
    {
       Serial.println("Invalid Commmand Received");
    }
@@ -273,7 +277,6 @@ void setup()
 
    // Stepper init
    myStepper.setSpeed(15);
-
 }
 
 void loop()
@@ -281,9 +284,9 @@ void loop()
    WiFiClient client = server.available();
    if (client)
    {
-      #ifdef DEBUG
-         Serial.println("Client Connected");
-      #endif
+#ifdef DEBUG
+      Serial.println("Client Connected");
+#endif
       while (client.connected())
       {
          // Need to receive instructions as to what motors/servos need to be driven and how
@@ -293,20 +296,19 @@ void loop()
          //   - pinchAxis degrees speed
 
          String command = client.readStringUntil('\n'); // receive the command over the network
-         if (command.length() != 0) 
+         if (command.length() != 0)
          {
-            #ifdef DEBUG
-               Serial.println("Received: " + command);
-            #endif
-            parseCommand(command); 
+#ifdef DEBUG
+            Serial.println("Received: " + command);
+#endif
+            parseCommand(command);
          }
-
       }
 
       client.stop();
-      #ifdef DEBUG
-         Serial.println("Disconnected from client");
-      #endif
+#ifdef DEBUG
+      Serial.println("Disconnected from client");
+#endif
    }
 
    delay(100);
