@@ -3,7 +3,7 @@ import time
 from pynput import keyboard
 
 
-board_host = "192.168.1.189"
+board_host = "192.168.1.190"
 board_port = 80
 board_address = (board_host, board_port)
 
