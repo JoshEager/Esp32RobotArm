@@ -22,6 +22,7 @@ namespace wireless {
             } else {
                 Serial.println();
                 Serial.println("Failed to connect to WiFi!");
+                return;
             }
         }
 

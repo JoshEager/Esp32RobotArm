@@ -1,4 +1,5 @@
 #pragma once
+#include "config.h"
 #include <WiFi.h>
 #include <Arduino.h>
 
