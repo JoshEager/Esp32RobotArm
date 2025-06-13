@@ -53,13 +53,8 @@ namespace wireless {
                     String command = wireless::recieveCommand(&client);
                     if (command.length() != 0) {
                         Serial.println("Received: " + command);
-                        float parseBeginTime = millis();
                         String response = parser::parseCommand(command);
-                        float parseEndTime = millis();
                         wireless::sendResponse(&client, response);
-                        Serial.print("Parsed command in ");
-                        Serial.print(parseEndTime - parseBeginTime);
-                        Serial.println(" ms");
                         vTaskDelay(20 / portTICK_PERIOD_MS);
                     } else { // Keepalive packet
                         vTaskDelay(20 / portTICK_PERIOD_MS);

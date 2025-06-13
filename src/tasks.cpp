@@ -25,18 +25,19 @@ namespace tasks {
         int *amountAndSpeed = (int *)parameters;
         int amount = amountAndSpeed[0];
         int speed = amountAndSpeed[1];
+        int initPos = motors::axis2ServoPos;
 
-        if (motors::axis2ServoPos < amount) {
-            for (int i = motors::axis2ServoPos; i < amount; i++) {
+        if (amount > 0) { // Positive movement
+            for (int i = motors::axis2ServoPos; i < (amount + initPos) && i < 180; i++) {
                 motors::axis2ServoPos = i;
                 motors::axis2Servo.write(i);
                 vTaskDelay(speed / portTICK_PERIOD_MS);
             }
-        } else {
-            for (int i = motors::axis2ServoPos; i > amount; i--) {
+        } else { // Negative movement
+            for (int i = motors::axis2ServoPos; i > (amount + initPos) && i > 0; i--) {
                 motors::axis2ServoPos = i;
                 motors::axis2Servo.write(i);
-                vTaskDelay(speed / portTICK_PERIOD_MS);      
+                vTaskDelay(speed / portTICK_PERIOD_MS);
             }
         }
 
@@ -49,18 +50,19 @@ namespace tasks {
         int *amountAndSpeed = (int *)parameters;
         int amount = amountAndSpeed[0];
         int speed = amountAndSpeed[1];
+        int initPos = motors::axis3ServoPos;
 
-        if (motors::axis3ServoPos < amount) {
-            for (int i = motors::axis3ServoPos; i < amount; i++) {
+        if (amount > 0) { // Positive movement
+            for (int i = motors::axis3ServoPos; i < (amount + initPos) && i < 180; i++) {
                 motors::axis3ServoPos = i;
                 motors::axis3Servo.write(i);
                 vTaskDelay(speed / portTICK_PERIOD_MS);
             }
-        } else {
-            for (int i = motors::axis3ServoPos; i > amount; i--) {
+        } else { // Negative movement
+            for (int i = motors::axis3ServoPos; i > (amount + initPos) && i > 0; i--) {
                 motors::axis3ServoPos = i;
                 motors::axis3Servo.write(i);
-                vTaskDelay(speed / portTICK_PERIOD_MS);      
+                vTaskDelay(speed / portTICK_PERIOD_MS);
             }
         }
 
