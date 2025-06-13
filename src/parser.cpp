@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "tasks.h"
 
 namespace parser {
     void executeCommand(int axis, int amount, int speed) {
@@ -8,6 +9,20 @@ namespace parser {
         Serial.print(amount); 
         Serial.print(" at speed ");
         Serial.println(speed);
+
+        switch (axis) {
+            case (1):
+                tasks::moveAxis1(amount, speed);
+                break;
+            case (2):
+                tasks::moveAxis2(amount, speed);
+                break;
+            case (3):
+                tasks::moveAxis3(amount, speed);
+                break;
+            default:
+                Serial.println("Invalid axis!");
+        }
     }
 
     String parseCommand(String command) { 
