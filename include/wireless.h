@@ -8,4 +8,5 @@ namespace wireless {
     void initializeWireless(void);
     String recieveCommand(WiFiClient *client);
     void sendResponse(WiFiClient *client, String response);
+    void runWiFiServer(void);
 }

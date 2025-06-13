@@ -3,12 +3,12 @@
 
 namespace parser {
     void executeCommand(int axis, int amount, int speed) {
-        Serial.print("Moving axis ");
-        Serial.print(axis);
-        Serial.print(" by ");
-        Serial.print(amount); 
-        Serial.print(" at speed ");
-        Serial.println(speed);
+        // Serial.print("Moving axis ");
+        // Serial.print(axis);
+        // Serial.print(" by ");
+        // Serial.print(amount); 
+        // Serial.print(" at speed ");
+        // Serial.println(speed);
 
         switch (axis) {
             case (1):

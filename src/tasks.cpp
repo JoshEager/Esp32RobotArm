@@ -79,13 +79,14 @@ namespace tasks {
         amountAndSpeed[0] = amount;
         amountAndSpeed[1] = speed;
 
-        xTaskCreate(
+        xTaskCreatePinnedToCore(
             axis1MoveTask, 
             "Axis 1 Move Task",
             2048,
             amountAndSpeed,
             1, 
-            &axis1MoveTaskHandle
+            &axis1MoveTaskHandle, 
+            1
         );
     }
 
@@ -98,13 +99,14 @@ namespace tasks {
         amountAndSpeed[0] = amount;
         amountAndSpeed[1] = speed;
 
-        xTaskCreate(
+        xTaskCreatePinnedToCore(
             axis2MoveTask, 
             "Axis 2 Move Task",
             2048,
             amountAndSpeed, 
             1, 
-            &axis2MoveTaskHandle
+            &axis2MoveTaskHandle, 
+            1
         );
     }
 
@@ -117,13 +119,14 @@ namespace tasks {
         amountAndSpeed[0] = amount;
         amountAndSpeed[1] = speed;
 
-        xTaskCreate(
+        xTaskCreatePinnedToCore(
             axis3MoveTask, 
             "Axis 3 Move Task",
             2048,
             amountAndSpeed, 
             1, 
-            &axis3MoveTaskHandle
+            &axis3MoveTaskHandle,
+            1
         );
     }
     

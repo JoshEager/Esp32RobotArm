@@ -1,5 +1,6 @@
 #include "wireless.h"
 #include "config.h"
+#include "parser.h"
 #include <Arduino.h>
 #include <WiFi.h>
 
@@ -41,5 +42,46 @@ namespace wireless {
 
     void sendResponse(WiFiClient *client, String response) {
         client->println(response);
+    }
+
+    void runWiFiServerTask(void *paramters) {
+        while (1) {
+            WiFiClient client = wireless::server.available();
+            if (client) {
+                Serial.println("Connected to client");
+                while (client.connected()) {
+                    String command = wireless::recieveCommand(&client);
+                    if (command.length() != 0) {
+                        Serial.println("Received: " + command);
+                        float parseBeginTime = millis();
+                        String response = parser::parseCommand(command);
+                        float parseEndTime = millis();
+                        wireless::sendResponse(&client, response);
+                        Serial.print("Parsed command in ");
+                        Serial.print(parseEndTime - parseBeginTime);
+                        Serial.println(" ms");
+                        vTaskDelay(20 / portTICK_PERIOD_MS);
+                    } else { // Keepalive packet
+                        vTaskDelay(20 / portTICK_PERIOD_MS);
+                    }
+                }
+                client.stop();
+                Serial.println("Disconnected from client");
+            }
+
+            vTaskDelay(30 / portTICK_PERIOD_MS);
+        }
+    }
+
+    void runWiFiServer(void) {
+        xTaskCreatePinnedToCore(
+            runWiFiServerTask,
+            "WiFi Server Task",
+            8192,
+            NULL,
+            1,
+            NULL,
+            0
+        );
     }
 }
