@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "parser.h"
 #include "wireless.h"
 #include "motors.h"
 
@@ -20,7 +21,8 @@ void loop() {
          String command = wireless::recieveCommand(&client);
          if (command.length() != 0) {
             Serial.println("Received: " + command);
-            wireless::sendResponse(&client, "Hello from the server!");
+            String response = parser::parseCommand(command);
+            wireless::sendResponse(&client, response);
          }
       }
       client.stop();

@@ -19,6 +19,6 @@ address = (host, port)
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(address)
 
-client.send("Hello from the client".encode())
+client.send("1 45 15".encode())
 response = readStringUntil("\n")
 print(response)
