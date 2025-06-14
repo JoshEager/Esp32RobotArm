@@ -2,32 +2,24 @@
 #include "tasks.h"
 
 namespace parser {
-    void executeCommand(int axis, int amount, int speed) {
-        // Serial.print("Moving axis ");
-        // Serial.print(axis);
-        // Serial.print(" by ");
-        // Serial.print(amount); 
-        // Serial.print(" at speed ");
-        // Serial.println(speed);
-
+    void executeCommand(int axis, String cmd, int speed) {
+        tasks::moveInstructions insToSend = {cmd, speed};    
         switch (axis) {
             case (1):
-                tasks::moveAxis1(amount, speed);
+                xQueueSend(tasks::axis1InstructionsQueue, (void *)&insToSend, 0);
                 break;
             case (2):
-                tasks::moveAxis2(amount, speed);
+                xQueueSend(tasks::axis2InstructionsQueue, (void *)&insToSend, 0);
                 break;
             case (3):
-                tasks::moveAxis3(amount, speed);
+                xQueueSend(tasks::axis3InstructionsQueue, (void *)&insToSend, 0);
                 break;
-            default:
-                Serial.println("Invalid axis!");
         }
     }
 
     String parseCommand(String command) { 
         String firstPhrase;
-        String secondPharse;
+        String secondPhrase;
         String thirdPhrase;
 
         // Any command should consist of 3 different phrases, seperated by spaces. Start by getting them
@@ -39,15 +31,15 @@ namespace parser {
         }
 
         firstPhrase = command.substring(0, firstSpaceIndex);
-        secondPharse = command.substring(firstSpaceIndex + 1, secondSpaceIndex);
+        secondPhrase = command.substring(firstSpaceIndex + 1, secondSpaceIndex);
         thirdPhrase = command.substring(secondSpaceIndex + 1);
 
-        if (!(firstPhrase.toInt() && secondPharse.toInt() && thirdPhrase.toInt())) {
+        if (!(firstPhrase.toInt() && thirdPhrase.toInt() && (secondPhrase == "cw" || secondPhrase == "ccw" || secondPhrase == "stop"))) {
             return "Invalid command!";
         }
 
         // Then execute
-        executeCommand(firstPhrase.toInt(), secondPharse.toInt(), thirdPhrase.toInt());
+        executeCommand(firstPhrase.toInt(), secondPhrase, thirdPhrase.toInt());
 
         return "ok";
     }

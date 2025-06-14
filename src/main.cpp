@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "wireless.h"
 #include "motors.h"
+#include "tasks.h"
 
 void setup() {
    Serial.begin(115200);
@@ -10,7 +11,7 @@ void setup() {
 
    wireless::initializeWireless();
    motors::initializeMotors();
-   wireless::runWiFiServer();
+   tasks::initializeTasks();
 }
 
 void loop() {

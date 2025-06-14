@@ -1,6 +1,5 @@
 #include "wireless.h"
 #include "config.h"
-#include "parser.h"
 #include <Arduino.h>
 #include <WiFi.h>
 
@@ -44,39 +43,4 @@ namespace wireless {
         client->println(response);
     }
 
-    void runWiFiServerTask(void *paramters) {
-        while (1) {
-            WiFiClient client = wireless::server.available();
-            if (client) {
-                Serial.println("Connected to client");
-                while (client.connected()) {
-                    String command = wireless::recieveCommand(&client);
-                    if (command.length() != 0) {
-                        Serial.println("Received: " + command);
-                        String response = parser::parseCommand(command);
-                        wireless::sendResponse(&client, response);
-                        vTaskDelay(20 / portTICK_PERIOD_MS);
-                    } else { // Keepalive packet
-                        vTaskDelay(20 / portTICK_PERIOD_MS);
-                    }
-                }
-                client.stop();
-                Serial.println("Disconnected from client");
-            }
-
-            vTaskDelay(30 / portTICK_PERIOD_MS);
-        }
-    }
-
-    void runWiFiServer(void) {
-        xTaskCreatePinnedToCore(
-            runWiFiServerTask,
-            "WiFi Server Task",
-            8192,
-            NULL,
-            1,
-            NULL,
-            0
-        );
-    }
 }
